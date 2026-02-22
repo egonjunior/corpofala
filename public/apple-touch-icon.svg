@@ -1,0 +1,16 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="180" height="180" rx="36" fill="#F2EDE4"/>
+  
+  <!-- Pulse rings -->
+  <circle cx="90" cy="73" r="48" stroke="#C4622D" stroke-width="2.8" opacity="0.08"/>
+  <circle cx="90" cy="73" r="33" stroke="#C4622D" stroke-width="3.2" opacity="0.18"/>
+  
+  <!-- Core pulse dot -->
+  <circle cx="90" cy="73" r="13" fill="#C4622D"/>
+  
+  <!-- Brand text "CorpoFala" -->
+  <text x="90" y="140" text-anchor="middle" fill="#1A1520" font-family="Georgia, 'Times New Roman', serif" font-size="21" font-weight="400" letter-spacing="-0.3">
+    <tspan>Corpo</tspan><tspan fill="#C4622D">Fala</tspan>
+  </text>
+</svg>

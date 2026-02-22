@@ -1,0 +1,16 @@
+project_id = "rixxotqmitfpsepwxohm"
+
+[functions.check-admin]
+verify_jwt = false
+
+[functions.cakto-webhook]
+verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.send-payment-confirmed-email]
+verify_jwt = false
+
+[functions.process-email-queue]
+verify_jwt = false
