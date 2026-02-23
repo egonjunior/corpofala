@@ -2,10 +2,15 @@ import { ReactNode, forwardRef, useEffect, useRef, useState, useCallback } from 
 import { ReaderChapter, estimateReadingTime } from "@/data/readerContent";
 import { Clock } from "lucide-react";
 
+import { Highlight } from "@/hooks/useHighlights";
+
 interface ReaderContentProps {
   chapter: ReaderChapter;
   darkMode: boolean;
   focusMode: boolean;
+  activeParagraphIndex: number | null;
+  onParagraphClick: (index: number) => void;
+  chapterHighlights: Highlight[];
   children?: ReactNode;
   renderParagraph?: (text: string, index: number, type?: string) => ReactNode;
   renderAfter?: (index: number) => ReactNode | null;
@@ -48,7 +53,7 @@ const RevealOnScroll = ({ children, delay = 0 }: { children: ReactNode; delay?: 
 };
 
 const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
-  ({ chapter, darkMode, focusMode, renderParagraph, renderAfter }, ref) => {
+  ({ chapter, darkMode, focusMode, activeParagraphIndex, onParagraphClick, chapterHighlights, lastStoppedParagraph, renderAfter }, ref) => {
     const readingTime = estimateReadingTime(chapter);
     const bg = focusMode ? "#F8F5F0" : darkMode ? "#1A1520" : "#F2EDE4";
     const textColor = darkMode ? "rgba(255,255,255,0.75)" : "#2A2035";
@@ -56,6 +61,133 @@ const ReaderContent = forwardRef<HTMLDivElement, ReaderContentProps>(
     const subtitleColor = darkMode ? "rgba(255,255,255,0.6)" : "#3A2A35";
     const mutedColor = darkMode ? "rgba(255,255,255,0.3)" : "#B0A090";
     const fontSize = darkMode ? 18 : 17;
+
+    // Custom paragraph render with "stopped here" marker and "block selection" logic
+    const renderParagraph = (text: string, index: number, type?: string) => {
+      const isStoppedHere = lastStoppedParagraph === index;
+      const isActive = activeParagraphIndex === index;
+      const highlight = chapterHighlights.find(h => h.paragraphIndex === index);
+
+      const titleColor = darkMode ? "rgba(255,255,255,0.9)" : "#1A1520";
+      const subtitleColor = darkMode ? "rgba(255,255,255,0.6)" : "#3A2A35";
+      const textColor = darkMode ? "rgba(255,255,255,0.75)" : "#2A2035";
+      const fontSize = darkMode ? 18 : 17;
+
+      let bgStyle = "transparent";
+      let borderStyle = "none";
+      let cursorStyle = "pointer";
+
+      if (isActive) {
+        bgStyle = darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)";
+        borderStyle = `1px dashed ${darkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"}`;
+      } else if (highlight) {
+        const colors = { yellow: "#F5D54730", red: "#C4622D25", cyan: "#00BCD420" };
+        bgStyle = colors[highlight.color];
+      }
+
+      const wrapper = (children: React.ReactNode) => (
+        <div
+          style={{ position: "relative" }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onParagraphClick(index);
+          }}
+          data-paragraph-index={index}
+          className="transition-colors duration-200"
+        >
+          {isStoppedHere && (
+            <div
+              style={{
+                position: "absolute",
+                left: -16,
+                top: 0,
+                bottom: 0,
+                width: 2,
+                background: "rgba(196,98,45,0.4)",
+              }}
+            >
+              <span
+                style={{
+                  position: "absolute",
+                  top: -16,
+                  left: 6,
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: 9,
+                  color: "rgba(196,98,45,0.6)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                você parou aqui
+              </span>
+            </div>
+          )}
+          <div
+            style={{
+              background: bgStyle,
+              border: borderStyle,
+              borderRadius: 6,
+              padding: isActive || highlight ? "8px 12px" : "0 8px",
+              margin: isActive || highlight ? "-8px -12px" : "0",
+              cursor: cursorStyle,
+            }}
+          >
+            {children}
+          </div>
+        </div>
+      );
+
+      if (type === "heading") {
+        return wrapper(
+          <h2
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontSize: 24,
+              color: titleColor,
+              marginTop: 40,
+              marginBottom: 16,
+              lineHeight: 1.3,
+              transition: "color 0.4s ease",
+            }}
+          >
+            {text}
+          </h2>
+        );
+      }
+
+      if (type === "subheading") {
+        return wrapper(
+          <h3
+            style={{
+              fontFamily: "'DM Serif Display', serif",
+              fontStyle: "italic",
+              fontSize: 20,
+              color: subtitleColor,
+              marginTop: 32,
+              marginBottom: 12,
+              transition: "color 0.4s ease",
+            }}
+          >
+            {text}
+          </h3>
+        );
+      }
+
+      return wrapper(
+        <p
+          style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 300,
+            fontSize,
+            lineHeight: 1.85,
+            color: textColor,
+            marginBottom: 24,
+            transition: "color 0.4s ease, font-size 0.4s ease",
+          }}
+        >
+          {text}
+        </p>
+      );
+    };
 
     return (
       <div

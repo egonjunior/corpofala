@@ -19,7 +19,7 @@ function loadData(): DynamicsData {
   const sessions: Record<DynamicId, DynamicSession[]> = {
     anchor: [],
     breathing: [],
-    bodymap: [],
+    butterfly: [],
     release: [],
     inversion: [],
   };
@@ -31,12 +31,12 @@ function loadData(): DynamicsData {
         if (parsed[key]) sessions[key as DynamicId] = parsed[key];
       }
     }
-  } catch {}
+  } catch { }
   let badges: string[] = [];
   try {
     const raw = localStorage.getItem(BADGES_KEY);
     if (raw) badges = JSON.parse(raw);
-  } catch {}
+  } catch { }
   return { sessions, badges };
 }
 
@@ -116,7 +116,7 @@ export function useDynamicsState() {
       const improving =
         last10.length >= 6 &&
         last10.slice(-3).reduce((s, x) => s + x.postScore, 0) / 3 >
-          last10.slice(0, 3).reduce((s, x) => s + x.postScore, 0) / 3;
+        last10.slice(0, 3).reduce((s, x) => s + x.postScore, 0) / 3;
       return { total, avgTime, streak, improving, sessions: last10 };
     },
     [data]

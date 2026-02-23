@@ -2,9 +2,16 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Pencil, Share2 } from "lucide-react";
 
+import { ReaderChapter } from "@/data/readerContent";
+import { Highlight } from "@/hooks/useHighlights";
+
 interface HighlightToolbarProps {
   darkMode: boolean;
   focusMode: boolean;
+  activeParagraphIndex: number | null;
+  chapter: ReaderChapter | undefined;
+  chapterHighlights: Highlight[];
+  onClose: () => void;
   onHighlight: (color: "yellow" | "red" | "cyan") => void;
   onNote: (note: string) => void;
   onRemove?: () => void;
@@ -15,85 +22,69 @@ interface HighlightToolbarProps {
 const HighlightToolbar = ({
   darkMode,
   focusMode,
+  activeParagraphIndex,
+  chapter,
+  chapterHighlights,
+  onClose,
   onHighlight,
   onNote,
   onRemove,
   onShare,
   isExisting,
 }: HighlightToolbarProps) => {
-  const [visible, setVisible] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [showNoteInput, setShowNoteInput] = useState(false);
   const [noteText, setNoteText] = useState("");
-  const [activeHighlightId, setActiveHighlightId] = useState<string | null>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
 
-  const handleSelection = useCallback(() => {
-    if (focusMode) return;
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-      // Check if clicked on existing highlight
+  const activeHighlight = activeParagraphIndex !== null
+    ? chapterHighlights.find(h => h.paragraphIndex === activeParagraphIndex)
+    : null;
+
+  // Position the toolbar above the active paragraph
+  useEffect(() => {
+    if (activeParagraphIndex === null) {
+      setShowNoteInput(false);
+      setNoteText("");
       return;
     }
 
-    const range = sel.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    const toolbarWidth = 180;
-    let x = rect.left + rect.width / 2 - toolbarWidth / 2;
-    x = Math.max(8, Math.min(x, window.innerWidth - toolbarWidth - 8));
-    const y = rect.top + window.scrollY - 52;
-
-    setPos({ x, y });
-    setVisible(true);
-    setShowNoteInput(false);
-    setActiveHighlightId(null);
-  }, [focusMode]);
-
-  // Listen for existing highlight clicks
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const highlightEl = target.closest("[data-highlight-id]") as HTMLElement | null;
-
-      if (highlightEl) {
-        const rect = highlightEl.getBoundingClientRect();
+    // Small delay to allow CSS transitions or DOM updates
+    setTimeout(() => {
+      const el = document.querySelector(`[data-paragraph-index="${activeParagraphIndex}"]`);
+      if (el) {
+        const rect = el.getBoundingClientRect();
         const toolbarWidth = 180;
         let x = rect.left + rect.width / 2 - toolbarWidth / 2;
         x = Math.max(8, Math.min(x, window.innerWidth - toolbarWidth - 8));
-        setPos({ x, y: rect.top + window.scrollY - 52 });
-        setVisible(true);
-        setShowNoteInput(false);
-        setActiveHighlightId(highlightEl.dataset.highlightId || null);
-        return;
+
+        // Place it slightly above the paragraph
+        setPos({ x, y: rect.top + window.scrollY - 56 });
       }
+    }, 50);
 
-      // Click outside toolbar
-      if (toolbarRef.current && !toolbarRef.current.contains(target)) {
-        setVisible(false);
-      }
-    };
+  }, [activeParagraphIndex]);
 
-    document.addEventListener("mouseup", handleSelection);
-    document.addEventListener("click", handleClick);
-    return () => {
-      document.removeEventListener("mouseup", handleSelection);
-      document.removeEventListener("click", handleClick);
-    };
-  }, [handleSelection]);
-
-  // Touch support
+  // Click outside to close
   useEffect(() => {
-    const handleTouchEnd = () => {
-      setTimeout(handleSelection, 200);
+    if (activeParagraphIndex === null) return;
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // If clicking inside toolbar, ignore
+      if (toolbarRef.current?.contains(target)) return;
+      // If clicking on another paragraph, ignore (let ReaderContent handle it)
+      if (target.closest("[data-paragraph-index]")) return;
+
+      onClose();
     };
-    document.addEventListener("touchend", handleTouchEnd);
-    return () => document.removeEventListener("touchend", handleTouchEnd);
-  }, [handleSelection]);
+
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [activeParagraphIndex, onClose]);
 
   const handleHighlightClick = (color: "yellow" | "red" | "cyan") => {
     onHighlight(color);
-    setVisible(false);
-    window.getSelection()?.removeAllRanges();
   };
 
   const handleSaveNote = () => {
@@ -101,16 +92,14 @@ const HighlightToolbar = ({
       onNote(noteText.trim());
       setNoteText("");
       setShowNoteInput(false);
-      setVisible(false);
     }
   };
 
   const handleRemove = () => {
     onRemove?.();
-    setVisible(false);
   };
 
-  if (!visible) return null;
+  if (activeParagraphIndex === null) return null;
 
   const buttons = [
     { color: "#F5D547", key: "yellow" as const, tooltip: "Destacar" },
@@ -138,7 +127,7 @@ const HighlightToolbar = ({
         }}
       >
         <div className="flex items-center gap-1.5">
-          {!activeHighlightId &&
+          {!activeHighlight &&
             buttons.map((btn) => (
               <button
                 key={btn.key}
@@ -155,7 +144,7 @@ const HighlightToolbar = ({
                 }}
               />
             ))}
-          {!activeHighlightId && (
+          {!activeHighlight && (
             <button
               onClick={() => setShowNoteInput(!showNoteInput)}
               title="Nota"
@@ -171,14 +160,12 @@ const HighlightToolbar = ({
               <Pencil size={14} color="white" />
             </button>
           )}
-          {!activeHighlightId && onShare && (
+          {!activeHighlight && onShare && (
             <button
               onClick={() => {
-                const sel = window.getSelection();
-                if (sel && sel.toString().trim()) {
-                  onShare(sel.toString().trim());
-                  setVisible(false);
-                  sel.removeAllRanges();
+                if (chapter && activeParagraphIndex !== null) {
+                  const ptext = chapter.paragraphs[activeParagraphIndex]?.text;
+                  if (ptext) onShare(ptext);
                 }
               }}
               title="Compartilhar trecho"
@@ -194,7 +181,7 @@ const HighlightToolbar = ({
               <Share2 size={14} color="white" />
             </button>
           )}
-          {activeHighlightId && (
+          {activeHighlight && (
             <button
               onClick={handleRemove}
               style={{

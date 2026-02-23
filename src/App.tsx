@@ -24,7 +24,7 @@ import AppEbookReader from "./pages/app/AppEbookReader";
 import CrisisHub from "./pages/app/CrisisHub";
 import AnchorDynamic from "./pages/app/dynamics/AnchorDynamic";
 import BreathingDynamic from "./pages/app/dynamics/BreathingDynamic";
-import BodyMapDynamic from "./pages/app/dynamics/BodyMapDynamic";
+import ButterflyDynamic from "./pages/app/dynamics/ButterflyDynamic";
 import ReleaseDynamic from "./pages/app/dynamics/ReleaseDynamic";
 import InversionDynamic from "./pages/app/dynamics/InversionDynamic";
 import DynamicsHistory from "./pages/app/dynamics/DynamicsHistory";
@@ -98,7 +98,7 @@ const App = () => (
             <Route path="/app/dinamicas" element={<AccessGuard><CrisisHub /></AccessGuard>} />
             <Route path="/app/dinamicas/ancora" element={<AccessGuard><AnchorDynamic /></AccessGuard>} />
             <Route path="/app/dinamicas/respiracao" element={<AccessGuard><BreathingDynamic /></AccessGuard>} />
-            <Route path="/app/dinamicas/mapa-corpo" element={<AccessGuard><BodyMapDynamic /></AccessGuard>} />
+            <Route path="/app/dinamicas/borboleta" element={<AccessGuard><ButterflyDynamic /></AccessGuard>} />
             <Route path="/app/dinamicas/soltar" element={<AccessGuard><ReleaseDynamic /></AccessGuard>} />
             <Route path="/app/dinamicas/inverter" element={<AccessGuard><InversionDynamic /></AccessGuard>} />
             <Route path="/app/dinamicas/historico" element={<AccessGuard><DynamicsHistory /></AccessGuard>} />

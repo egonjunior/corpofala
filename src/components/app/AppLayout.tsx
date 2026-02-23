@@ -4,6 +4,7 @@ import AppHeader from "./AppHeader";
 import AppTabBar from "./AppTabBar";
 import CrisisButton from "./CrisisButton";
 import PageTransition from "./PageTransition";
+import { PushNotificationManager } from "../pwa/PushNotificationManager";
 
 const AppLayout = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
@@ -40,6 +41,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
       <AppTabBar />
       <CrisisButton />
+      <PushNotificationManager />
     </div>
   );
 };

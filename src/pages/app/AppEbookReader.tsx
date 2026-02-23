@@ -66,6 +66,7 @@ const AppEbookReader = () => {
 
   const [scrollProgress, setScrollProgress] = useState(0);
   const [currentParagraph, setCurrentParagraph] = useState(0);
+  const [activeParagraphIndex, setActiveParagraphIndex] = useState<number | null>(null);
   const [markingsOpen, setMarkingsOpen] = useState(false);
   const [completedSliders, setCompletedSliders] = useState<Set<string>>(new Set());
   const [shareText, setShareText] = useState<string | null>(null);
@@ -95,17 +96,7 @@ const AppEbookReader = () => {
     notes,
     addHighlight,
     removeHighlight,
-    applyHighlights,
   } = useHighlights(slug);
-
-  // Apply highlights on mount
-  useEffect(() => {
-    if (contentRef.current) {
-      setTimeout(() => {
-        if (contentRef.current) applyHighlights(contentRef.current);
-      }, 300);
-    }
-  }, [slug, applyHighlights]);
 
   // Focus mode: exit on ESC or click outside
   useEffect(() => {
@@ -130,67 +121,30 @@ const AppEbookReader = () => {
   };
 
   const handleHighlight = (color: "yellow" | "red" | "cyan") => {
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed) return;
-    const text = sel.toString();
-    const range = sel.getRangeAt(0);
+    if (activeParagraphIndex === null || !chapter) return;
+    const text = chapter.paragraphs[activeParagraphIndex]?.text;
+    if (!text) return;
 
-    // Find paragraph index
-    let paraEl = range.startContainer as HTMLElement;
-    while (paraEl && !paraEl.dataset?.paragraphIndex) {
-      paraEl = paraEl.parentElement as HTMLElement;
-    }
-    const paragraphIndex = paraEl ? parseInt(paraEl.dataset.paragraphIndex || "0", 10) : 0;
-
-    // Calculate offsets within paragraph text
-    const preRange = document.createRange();
-    preRange.selectNodeContents(paraEl || range.startContainer);
-    preRange.setEnd(range.startContainer, range.startOffset);
-    const startOffset = preRange.toString().length;
-    const endOffset = startOffset + text.length;
-
-    addHighlight({ paragraphIndex, startOffset, endOffset, text, color, note: null });
-
-    // Reapply to show immediately
-    setTimeout(() => {
-      if (contentRef.current) applyHighlights(contentRef.current);
-    }, 50);
-
-    sel.removeAllRanges();
+    addHighlight({ paragraphIndex: activeParagraphIndex, text, color, note: null });
+    setActiveParagraphIndex(null);
   };
 
   const handleNote = (noteText: string) => {
-    const sel = window.getSelection();
-    if (!sel || sel.isCollapsed) return;
-    const text = sel.toString();
+    if (activeParagraphIndex === null || !chapter) return;
+    const text = chapter.paragraphs[activeParagraphIndex]?.text;
+    if (!text || !noteText.trim()) return;
 
-    let paraEl = sel.getRangeAt(0).startContainer as HTMLElement;
-    while (paraEl && !paraEl.dataset?.paragraphIndex) {
-      paraEl = paraEl.parentElement as HTMLElement;
-    }
-    const paragraphIndex = paraEl ? parseInt(paraEl.dataset.paragraphIndex || "0", 10) : 0;
-    const range = sel.getRangeAt(0);
-    const preRange = document.createRange();
-    preRange.selectNodeContents(paraEl || range.startContainer);
-    preRange.setEnd(range.startContainer, range.startOffset);
-    const startOffset = preRange.toString().length;
-    const endOffset = startOffset + text.length;
-
-    addHighlight({ paragraphIndex, startOffset, endOffset, text, color: "cyan", note: noteText });
-    sel.removeAllRanges();
+    addHighlight({ paragraphIndex: activeParagraphIndex, text, color: "cyan", note: noteText });
+    setActiveParagraphIndex(null);
   };
 
   const handleRemoveHighlight = () => {
-    // Find the clicked highlight
-    const activeEl = document.querySelector("[data-highlight-id]:hover, [data-highlight-id]:focus");
-    if (activeEl) {
-      const id = (activeEl as HTMLElement).dataset.highlightId;
-      if (id) {
-        removeHighlight(id);
-        setTimeout(() => {
-          if (contentRef.current) applyHighlights(contentRef.current);
-        }, 50);
+    if (activeParagraphIndex !== null) {
+      const highlight = chapterHighlights.find(h => h.paragraphIndex === activeParagraphIndex);
+      if (highlight) {
+        removeHighlight(highlight.id);
       }
+      setActiveParagraphIndex(null);
     }
   };
 
@@ -599,6 +553,12 @@ const AppEbookReader = () => {
           chapter={chapter}
           darkMode={darkMode}
           focusMode={focusMode}
+          activeParagraphIndex={activeParagraphIndex}
+          chapterHighlights={chapterHighlights}
+          onParagraphClick={(index) => {
+            if (activeParagraphIndex === index) setActiveParagraphIndex(null);
+            else setActiveParagraphIndex(index);
+          }}
           renderParagraph={renderParagraph}
           renderAfter={renderAfter}
         />
@@ -610,6 +570,10 @@ const AppEbookReader = () => {
       <HighlightToolbar
         darkMode={darkMode}
         focusMode={focusMode}
+        activeParagraphIndex={activeParagraphIndex}
+        chapter={chapter}
+        chapterHighlights={chapterHighlights}
+        onClose={() => setActiveParagraphIndex(null)}
         onHighlight={handleHighlight}
         onNote={handleNote}
         onRemove={handleRemoveHighlight}

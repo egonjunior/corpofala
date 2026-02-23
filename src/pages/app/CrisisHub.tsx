@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Clock, ArrowLeft, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, ArrowLeft, Sparkles, BookOpen, X, Library } from "lucide-react";
 import AppLayout from "@/components/app/AppLayout";
 import CrisisEntry from "@/components/dynamics/CrisisEntry";
-import { DYNAMICS_LIST, DYNAMIC_ROUTES } from "@/data/dynamicsContent";
+import { ScienceModal } from "@/components/dynamics/ScienceModal";
+import { DYNAMICS_LIST, DYNAMIC_ROUTES, DynamicInfo } from "@/data/dynamicsContent";
 import { useDynamicsState } from "@/hooks/useDynamicsState";
 
 const fadeUp = {
@@ -19,6 +21,7 @@ const CrisisHub = () => {
   const navigate = useNavigate();
   const { getStats, getAllSessions } = useDynamicsState();
   const isCrisisMode = searchParams.get("modo") === "crise";
+  const [scienceModal, setScienceModal] = useState<DynamicInfo | null>(null);
 
   if (isCrisisMode) {
     return <CrisisEntry />;
@@ -84,57 +87,85 @@ const CrisisHub = () => {
           {DYNAMICS_LIST.map((d, i) => {
             const stats = getStats(d.id);
             return (
-              <motion.button
+              <motion.div
                 key={d.id}
                 variants={fadeUp}
                 initial="hidden"
                 animate="visible"
                 custom={2 + i}
-                onClick={() => navigate(DYNAMIC_ROUTES[d.id])}
-                className="w-full p-5 rounded-2xl flex items-center gap-4 text-left glass-card"
-                style={{ cursor: "pointer", borderRadius: 16 }}
+                className="w-full flex bg-transparent rounded-2xl overflow-hidden glass-card relative"
+                style={{ borderRadius: 16 }}
               >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{
-                    background: d.bgColor,
-                    boxShadow: `0 4px 12px ${d.color}20`,
-                  }}
+                {/* Main area to start the therapy */}
+                <button
+                  onClick={() => navigate(DYNAMIC_ROUTES[d.id])}
+                  className="flex-1 p-5 flex items-center gap-4 text-left cursor-pointer transition-all hover:bg-white/5 active:bg-white/10"
+                  style={{ background: "transparent", border: "none" }}
                 >
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill={d.color}>
-                    <path d={d.icon} />
-                  </svg>
-                </div>
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: d.bgColor,
+                      boxShadow: `0 4px 12px ${d.color}20`,
+                    }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill={d.color}>
+                      <path d={d.icon} />
+                    </svg>
+                  </div>
 
-                <div className="flex-1 min-w-0">
-                  <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, fontWeight: 600, color: "#1A1520" }}>
-                    {d.name}
-                  </p>
-                  <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#6A5A55", marginTop: 2, lineHeight: 1.5 }}>
-                    {d.description}
-                  </p>
-                </div>
-
-                {stats.total > 0 ? (
-                  <div className="flex-shrink-0 text-right">
-                    <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 18, color: d.color, fontWeight: 500 }}>
-                      {stats.total}x
+                  <div className="flex-1 min-w-0 pr-2">
+                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 16, fontWeight: 600, color: "#1A1520" }}>
+                      {d.name}
                     </p>
-                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "#B0A090" }}>
-                      sessões
+                    <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, color: "#6A5A55", marginTop: 2, lineHeight: 1.5 }}>
+                      {d.description}
                     </p>
                   </div>
-                ) : (
-                  <div className="flex-shrink-0">
-                    <Sparkles size={14} color="#B0A090" />
-                  </div>
-                )}
-              </motion.button>
+
+                  {stats.total > 0 ? (
+                    <div className="flex-shrink-0 text-right pr-2">
+                      <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 18, color: d.color, fontWeight: 500 }}>
+                        {stats.total}x
+                      </p>
+                      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, color: "#B0A090" }}>
+                        sessões
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 pr-2">
+                      <Sparkles size={14} color="#B0A090" />
+                    </div>
+                  )}
+                </button>
+
+                {/* Science/Info button separator */}
+                <div className="w-[1px] my-4" style={{ background: "rgba(26,21,32,0.06)" }} />
+
+                {/* Info Area */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setScienceModal(d);
+                  }}
+                  className="flex flex-col items-center justify-center px-4 cursor-pointer transition-colors"
+                  style={{ background: "transparent", border: "none", color: "rgba(26,21,32,0.4)" }}
+                >
+                  <Library size={20} />
+                </button>
+              </motion.div>
             );
           })}
         </div>
       </div>
-    </AppLayout>
+
+      {/* Science Info Modal */}
+      <ScienceModal
+        dynamic={scienceModal}
+        onClose={() => setScienceModal(null)}
+      />
+
+    </AppLayout >
   );
 };
 

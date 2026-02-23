@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { DYNAMICS_LIST, DYNAMIC_ROUTES } from "@/data/dynamicsContent";
+import { Library } from "lucide-react";
+import { DYNAMICS_LIST, DYNAMIC_ROUTES, DynamicInfo } from "@/data/dynamicsContent";
+import { ScienceModal } from "./ScienceModal";
 
 const CrisisEntry = () => {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [scienceModal, setScienceModal] = useState<DynamicInfo | null>(null);
 
   useEffect(() => {
     // Delay before showing "toque quando estiver pronto"
@@ -97,36 +100,59 @@ const CrisisEntry = () => {
             </p>
 
             {DYNAMICS_LIST.map((d, i) => (
-              <motion.button
+              <motion.div
                 key={d.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                onClick={() => navigate(DYNAMIC_ROUTES[d.id])}
-                className="w-full py-4 px-5 rounded-2xl flex items-center gap-4"
+                className="w-full flex rounded-2xl overflow-hidden"
                 style={{
                   background: "rgba(255,255,255,0.05)",
                   border: `1px solid ${d.color}33`,
                 }}
               >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill={d.color}>
-                  <path d={d.icon} />
-                </svg>
-                <span
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: 16,
-                    color: d.color,
-                    fontWeight: 500,
-                  }}
+                <button
+                  onClick={() => navigate(DYNAMIC_ROUTES[d.id])}
+                  className="flex-1 py-4 px-5 flex items-center gap-4 text-left transition-colors hover:bg-white/5"
                 >
-                  {d.word}
-                </span>
-              </motion.button>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill={d.color}>
+                    <path d={d.icon} />
+                  </svg>
+                  <span
+                    style={{
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: 16,
+                      color: d.color,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {d.word}
+                  </span>
+                </button>
+
+                <div className="w-[1px] my-4" style={{ background: "rgba(255,255,255,0.1)" }} />
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setScienceModal(d);
+                  }}
+                  className="px-4 flex items-center justify-center transition-colors hover:bg-white/5 active:bg-white/10"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
+                >
+                  <Library size={20} />
+                </button>
+              </motion.div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ScienceModal
+        dynamic={scienceModal}
+        onClose={() => setScienceModal(null)}
+        isDarkTheme
+      />
     </div>
   );
 };
