@@ -474,7 +474,7 @@ const ReelView = ({
             try {
               if (reel.ruptureType === "pulse") navigator.vibrate?.(100);
               else if (reel.ruptureType === "freeze") navigator.vibrate?.([50, 30, 50]);
-            } catch {}
+            } catch { }
 
             if (reel.ruptureType === "freeze") {
               setFreezeGradient(true);
@@ -499,7 +499,7 @@ const ReelView = ({
 
       audio.addEventListener("timeupdate", handleTime);
       audio.addEventListener("ended", handleEnded);
-      audio.play().catch(() => {});
+      audio.play().catch(() => { });
 
       return () => {
         audio.removeEventListener("timeupdate", handleTime);
@@ -520,7 +520,7 @@ const ReelView = ({
           try {
             if (reel.ruptureType === "pulse") navigator.vibrate?.(100);
             else if (reel.ruptureType === "freeze") navigator.vibrate?.([50, 30, 50]);
-          } catch {}
+          } catch { }
 
           if (reel.ruptureType === "freeze") {
             setFreezeGradient(true);
@@ -612,13 +612,14 @@ const ReelView = ({
       <HeartBurst show={showHeartBurst} onDone={() => setShowHeartBurst(false)} />
 
       {/* Main text area */}
-      <div className="absolute z-10" style={{ top: "10%", left: 16, right: 60, maxHeight: "55%", overflow: "hidden" }}>
+      <div className="absolute z-10 flex flex-col justify-end" style={{ top: "10%", left: 16, right: 60, height: "55%", overflow: "hidden", paddingBottom: 32 }}>
         {reel.lines.slice(0, visibleLines).map((line, i) => {
           const isRuptureLine = line.isRupture && ruptureActive;
 
           if (isRuptureLine && reel.ruptureType === "pulse") {
             return (
               <motion.div
+                layout
                 key={i}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -644,11 +645,12 @@ const ReelView = ({
           if (isRuptureLine && reel.ruptureType === "freeze") {
             return (
               <motion.p
+                layout
                 key={i}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                style={{ fontFamily: "Inter, sans-serif", fontWeight: 300, fontSize: 17, color: "#FFFFFF", lineHeight: 1.7, letterSpacing: "0.08em" }}
+                style={{ fontFamily: "Inter, sans-serif", fontWeight: 300, fontSize: 17, color: "#FFFFFF", lineHeight: 1.7, letterSpacing: "0.08em", flexShrink: 0 }}
               >
                 {line.text}
               </motion.p>
@@ -657,11 +659,12 @@ const ReelView = ({
 
           return (
             <motion.p
+              layout
               key={i}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              style={{ fontFamily: "Inter, sans-serif", fontWeight: 300, fontSize: 17, color: "#fff", lineHeight: 1.7 }}
+              style={{ fontFamily: "Inter, sans-serif", fontWeight: 300, fontSize: 17, color: "#fff", lineHeight: 1.7, flexShrink: 0 }}
             >
               {highlightKeywords(line.text)}
             </motion.p>
@@ -844,7 +847,7 @@ const playSwipeSound = () => {
     src.connect(filter);
     filter.connect(ctx.destination);
     src.start();
-  } catch {}
+  } catch { }
 };
 
 /* ── Main FunnelInstagram Component ── */
