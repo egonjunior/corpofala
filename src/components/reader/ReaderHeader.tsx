@@ -1,11 +1,13 @@
 import { ArrowLeft, Maximize2, Moon, Sun, BookMarked, User, Map } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { motion } from "framer-motion";
 
 interface ReaderHeaderProps {
   chapterTitle: string;
   focusMode: boolean;
   darkMode: boolean;
+  isVisible?: boolean;
   onToggleFocus: () => void;
   onToggleDark: () => void;
   onOpenMarkings: () => void;
@@ -16,6 +18,7 @@ const ReaderHeader = ({
   chapterTitle,
   focusMode,
   darkMode,
+  isVisible = true,
   onToggleFocus,
   onToggleDark,
   onOpenMarkings,
@@ -33,7 +36,10 @@ const ReaderHeader = ({
   const iconColor = darkMode ? "rgba(255,255,255,0.6)" : "#8A7A70";
 
   return (
-    <header
+    <motion.header
+      initial={{ y: 0 }}
+      animate={{ y: isVisible ? "0%" : "-100%", opacity: isVisible ? 1 : 0 }}
+      transition={{ type: "spring", stiffness: 350, damping: 35, mass: 1 }}
       className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between"
       style={{
         height: 52,
@@ -135,7 +141,7 @@ const ReaderHeader = ({
           <User size={14} color={darkMode ? "rgba(255,255,255,0.5)" : "#8A7A70"} />
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };
 

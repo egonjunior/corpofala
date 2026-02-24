@@ -71,6 +71,39 @@ const AppEbookReader = () => {
   const [completedSliders, setCompletedSliders] = useState<Set<string>>(new Set());
   const [shareText, setShareText] = useState<string | null>(null);
   const [mapNotReadyOpen, setMapNotReadyOpen] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
+
+  // Auto-hide header on scroll down
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const updateHeaderVisibility = () => {
+      const currentScrollY = window.scrollY;
+
+      // If scrolling up or very close to top, show header
+      if (currentScrollY < lastScrollY || currentScrollY < 100) {
+        setHeaderVisible(true);
+      }
+      // If scrolling down, hide header
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setHeaderVisible(false);
+      }
+
+      lastScrollY = currentScrollY;
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateHeaderVisibility);
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const { contentRef } = useReadingProgress({
     onProgress: useCallback(
@@ -511,6 +544,7 @@ const AppEbookReader = () => {
         chapterTitle={chapter.title}
         focusMode={focusMode}
         darkMode={darkMode}
+        isVisible={headerVisible}
         onToggleFocus={toggleFocus}
         onToggleDark={toggleDark}
         onOpenMarkings={() => setMarkingsOpen(true)}
