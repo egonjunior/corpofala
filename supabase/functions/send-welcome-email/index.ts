@@ -55,11 +55,15 @@ Deno.serve(async (req) => {
                 Sua conta foi criada, ${firstName}.
               </h1>
               <p style="margin:0 0 28px;font-family:sans-serif;font-size:15px;color:rgba(255,255,255,0.50);line-height:1.7;">
-                Falta só um passo: finalize o pagamento para liberar seu acesso completo ao livro interativo e todas as dinâmicas.
+                Para liberar seu acesso completo ao livro interativo e todas as dinâmicas, siga os 3 passos abaixo:
+              </p>
+              
+              <p style="margin:0 0 24px;font-family:sans-serif;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.6;">
+                <strong>Passo 1:</strong> Clique no botão abaixo para garantir sua vaga e finalizar sua inscrição (pagamento 100% seguro via Cakto).
               </p>
 
               <!-- CTA -->
-              <table width="100%" cellpadding="0" cellspacing="0">
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
                 <tr>
                   <td align="center">
                     <a href="https://pay.cakto.com.br/z8n5fua_774989"
@@ -69,6 +73,13 @@ Deno.serve(async (req) => {
                   </td>
                 </tr>
               </table>
+
+              <p style="margin:0 0 16px;font-family:sans-serif;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.6;">
+                <strong>Passo 2:</strong> Após o pagamento ser confirmado, ignore a tela final da Cakto e <strong>volte ao site ocorpofala.com</strong>.
+              </p>
+              <p style="margin:0 0 28px;font-family:sans-serif;font-size:14px;color:rgba(255,255,255,0.85);line-height:1.6;">
+                <strong>Passo 3:</strong> Clique em "Entrar" e insira o e-mail e a senha que você acabou de criar para abrir o seu mapa interativo.
+              </p>
 
               <p style="margin:28px 0 0;font-family:sans-serif;font-size:12px;color:rgba(255,255,255,0.25);text-align:center;letter-spacing:0.08em;">
                 7 DIAS DE GARANTIA · ACESSO IMEDIATO APÓS PAGAMENTO
@@ -100,9 +111,9 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Seu Corpo <gestao@corpofala.com>",
+        from: "O Corpo Fala <gestao@corpofala.com>",
         to: [email],
-        subject: "Sua conta foi criada — finalize o pagamento",
+        subject: "Importante: Seu acesso ao 'O Corpo Fala' está quase pronto.",
         html,
       }),
     });
