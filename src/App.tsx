@@ -40,6 +40,8 @@ import AdminMessages from "./pages/admin/AdminMessages";
 import AppInbox from "./pages/app/AppInbox";
 import AppProfile from "./pages/app/AppProfile";
 import FunilLigacao from "./pages/FunilLigacao";
+import FunilLigacaoInsta from "./pages/funnels/FunilLigacaoInsta";
+import FunilLigacaoCurta from "./pages/funnels/FunilLigacaoCurta";
 import AccessPending from "./pages/app/AccessPending";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -79,6 +81,8 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/venda" element={<LandingPage />} />
             <Route path="/ligacao" element={<FunilLigacao />} />
+            <Route path="/ligacao-insta" element={<FunilLigacaoInsta />} />
+            <Route path="/ligacao-curta" element={<FunilLigacaoCurta />} />
             <Route path="/lp-original" element={<Index />} />
             <Route path="/experiencia" element={<NarrativeLP />} />
             <Route path="/ebook" element={<EbookIndex />} />
